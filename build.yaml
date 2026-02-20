@@ -51,3 +51,5 @@ include:
   - board: sofle_choc_pro_right
     shield: settings_reset
     snippet: studio-rpc-usb-uart
+  - board: sofle_choc_pro_left
+  - board: sofle_choc_pro_right
