@@ -9,6 +9,8 @@ manifest:
       url-base: https://github.com/mctechnology17
     - name: ssbb
       url-base: https://github.com/ssbb
+    - name: m165437 #new entry
+      url-base: https://github.com/M165437 #new entry
   projects:
     - name: zmk
       remote: zmkfirmware
@@ -21,5 +23,8 @@ manifest:
     - name: zmk-antecedent-morph
       remote: ssbb
       revision: v1
+    - name: nice-view-gem #new entry
+      remote: m165437 #new entry
+      revision: main #new entry
   self:
     path: config
