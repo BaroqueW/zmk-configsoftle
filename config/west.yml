@@ -17,7 +17,7 @@ manifest:
     # support nice_oled and nice_epaper
     - name: zmk-nice-oled
       remote: baroquew
-      revision: main
+      revision: master
     - name: zmk-antecedent-morph
       remote: ssbb
       revision: v1
