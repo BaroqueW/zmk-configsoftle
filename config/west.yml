@@ -5,12 +5,10 @@ manifest:
     # Additional modules containing boards/shields/custom code can be listed here as well
     # See https://docs.zephyrproject.org/3.2.0/develop/west/manifest.html#projects
         # support nice_oled and nice_epaper
-    - name: mctechnology17
-      url-base: https://github.com/mctechnology17
+    - name: baroquew
+      url-base: https://github.com/BaroqueW
     - name: ssbb
       url-base: https://github.com/ssbb
-    - name: m165437 #new entry
-      url-base: https://github.com/M165437 #new entry
   projects:
     - name: zmk
       remote: zmkfirmware
@@ -18,13 +16,10 @@ manifest:
       import: app/west.yml
     # support nice_oled and nice_epaper
     - name: zmk-nice-oled
-      remote: mctechnology17
+      remote: baroquew
       revision: main
     - name: zmk-antecedent-morph
       remote: ssbb
       revision: v1
-    - name: nice-view-gem #new entry
-      remote: m165437 #new entry
-      revision: main #new entry
   self:
     path: config
