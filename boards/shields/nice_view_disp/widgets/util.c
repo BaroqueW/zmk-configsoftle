@@ -21,10 +21,10 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
 
     lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
 #ifdef CONFIG_NICE_VIEW_DISP_ROTATE_180
-    lv_canvas_transform(canvas, &img, -900, LV_IMG_ZOOM_NONE, -1, 0, CANVAS_SIZE / 2,
+    lv_canvas_transform(canvas, &img, 900, LV_IMG_ZOOM_NONE, -1, 0, CANVAS_SIZE / 2,
                         CANVAS_SIZE / 2 - 1, true);
 #else
-    lv_canvas_transform(canvas, &img, 900, LV_IMG_ZOOM_NONE, -1, 0, CANVAS_SIZE / 2,
+    lv_canvas_transform(canvas, &img, -900, LV_IMG_ZOOM_NONE, -1, 0, CANVAS_SIZE / 2,
                         CANVAS_SIZE / 2, true);
 #endif
 }
