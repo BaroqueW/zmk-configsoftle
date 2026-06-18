@@ -118,8 +118,8 @@ static void draw_top(lv_obj_t *widget, lv_color_t cbuf[], const struct status_st
     }
     lv_canvas_draw_line(canvas, points, 10, &line_dsc);
 
-    // Rotate canvas
-    rotate_canvas(canvas, cbuf);
+    // Rotate canvas (render layer upside-down at bottom)
+    rotate_canvas_180(canvas, cbuf);
 }
 
 static void draw_middle(lv_obj_t *widget, lv_color_t cbuf[], const struct status_state *state) {
