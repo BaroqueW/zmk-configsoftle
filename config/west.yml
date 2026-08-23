@@ -7,10 +7,6 @@ manifest:
     - name: yanshay
       url-base: https://github.com/yanshay
         # support nice_oled and nice_epaper
-    - name: baroquew
-      url-base: https://github.com/BaroqueW
-    - name: ssbb
-      url-base: https://github.com/ssbb
   projects:
     - name: zmk
       remote: zmkfirmware
