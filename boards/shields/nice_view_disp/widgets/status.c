@@ -122,8 +122,8 @@ static void draw_top(lv_obj_t *widget, const struct status_state *state) {
     }
     canvas_draw_line(canvas, points, 10, &line_dsc);
 
-    // Rotate canvas (render layer upside-down at bottom)
-    rotate_canvas_180(canvas);
+    // Rotate canvas to match the display orientation.
+    rotate_canvas(canvas);
 }
 
 static void draw_middle(lv_obj_t *widget, const struct status_state *state) {

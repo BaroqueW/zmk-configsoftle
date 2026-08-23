@@ -28,8 +28,6 @@ void rotate_canvas(lv_obj_t *canvas) {
 #endif
 }
 
-void rotate_canvas_180(lv_obj_t *canvas) { rotate_canvas_to(canvas, LV_DISPLAY_ROTATION_180); }
-
 void draw_battery(lv_obj_t *canvas, const struct status_state *state) {
     lv_draw_rect_dsc_t rect_black_dsc;
     init_rect_dsc(&rect_black_dsc, LVGL_BACKGROUND);
