@@ -20,14 +20,24 @@
 
 / {
     behaviors {
+        adjust_oneshot: adjust_oneshot {
+            compatible = "zmk,behavior-sticky-key";
+            #binding-cells = <1>;
+
+            bindings = <&mo>;
+            release-after-ms = <5000>;
+            quick-release;
+        };
+
         lower_adjust: lower_adjust {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
 
-            flavor = "hold-preferred";
+            flavor = "tap-preferred";
             tapping-term-ms = <200>;
+            retro-tap;
 
-            bindings = <&mo &sl>;
+            bindings = <&mo>, <&adjust_oneshot>;
         };
     };
 
@@ -121,7 +131,7 @@
             // |   H   |  J  |  K  |  L  |  ;  |   '   |
             // |   N   |  M  |  ,  |  .  |  /  | ENTER |
             //
-            // Double-tap LOWER, then:
+            // Tap LOWER, then:
             //
             // Q -> Y
             // W -> U
