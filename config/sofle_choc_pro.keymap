@@ -19,41 +19,22 @@
 #define ADJUST 3
 
 / {
-    /*
-     * LOWER key behavior:
-     *
-     * Hold:
-     *   Momentarily activates LOWER.
-     *
-     * Single tap:
-     *   Does nothing.
-     *
-     * Double tap:
-     *   Activates ADJUST as a sticky/one-shot layer.
-     *   The next keypress uses ADJUST, after which ADJUST is released.
-     */
     behaviors {
-        lower_hold: lower_hold {
-            compatible = "zmk,behavior-hold-tap";
-            #binding-cells = <0>;
-            flavor = "hold-preferred";
-            tapping-term-ms = <200>;
-
-            bindings = <&mo LOWER>, <&none>;
-        };
-
         lower_td: lower_tap_dance {
             compatible = "zmk,behavior-tap-dance";
             #binding-cells = <0>;
             tapping-term-ms = <200>;
 
-            bindings = <&lower_hold>, <&sl ADJUST>;
+            /*
+             * 1 press / hold: LOWER
+             * 2 taps:         sticky ADJUST for the next key
+             */
+            bindings = <&mo LOWER>, <&sl ADJUST>;
         };
     };
 
     /*
-     * Activate ADJUST while LOWER and RAISE
-     * are simultaneously active.
+     * Holding LOWER + RAISE also activates ADJUST.
      */
     conditional_layers {
         compatible = "zmk,conditional-layers";
@@ -140,25 +121,18 @@
             display-name = "adjust";
 
             // ----------------------------------------------------------------------------------------------------------------------------
-            // ADJUST duplicates the DEFAULT layer's right half onto the left half.
-            //
-            // Left physical side:
+            // Right-hand DEFAULT keys copied to the LEFT side in the same order:
             //
             // |   6   |  7  |  8  |  9  |  0  | BKSPC |
             // |   Y   |  U  |  I  |  O  |  P  |   =   |
             // |   H   |  J  |  K  |  L  |  ;  |   '   |
             // |   N   |  M  |  ,  |  .  |  /  | ENTER |
             //
-            // The right side is deliberately empty.
-            //
-            // This allows, for example:
-            //
-            // double-tap LOWER -> Q = Y
-            // double-tap LOWER -> W = U
-            // double-tap LOWER -> E = I
-            // double-tap LOWER -> A = H
-            // double-tap LOWER -> S = J
-            // double-tap LOWER -> Z = N
+            // Example:
+            // double-tap LOWER, then Q -> Y
+            // double-tap LOWER, then W -> U
+            // double-tap LOWER, then A -> H
+            // double-tap LOWER, then Z -> N
 
             bindings = <
 &kp N6     &kp N7  &kp N8     &kp N9   &kp N0    &kp BACKSPACE                           &none  &none  &none  &none  &none  &none
