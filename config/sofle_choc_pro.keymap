@@ -20,21 +20,48 @@
 
 / {
     behaviors {
-        lower_td: lower_tap_dance {
+        /*
+         * Tap portion of the LOWER thumb key:
+         *
+         * Single tap -> nothing
+         * Double tap -> sticky ADJUST
+         *
+         * The sticky layer remains active until the next keypress.
+         */
+        lower_dance: lower_dance {
             compatible = "zmk,behavior-tap-dance";
             #binding-cells = <0>;
-            tapping-term-ms = <200>;
+            tapping-term-ms = <250>;
 
-            /*
-             * 1 press / hold: LOWER
-             * 2 taps:         sticky ADJUST for the next key
-             */
-            bindings = <&mo LOWER>, <&sl ADJUST>;
+            bindings = <&none>, <&sl ADJUST>;
+        };
+
+        /*
+         * LOWER thumb key:
+         *
+         * Hold -> momentary LOWER
+         * Tap  -> lower_dance
+         *
+         * lower_dance then distinguishes single vs double tap.
+         *
+         * Parameter 1 is forwarded to &mo.
+         * Parameter 2 is unused by lower_dance, so we pass 0
+         * in the keymap.
+         */
+        lower_key: lower_key {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+
+            flavor = "hold-preferred";
+            tapping-term-ms = <200>;
+            quick-tap-ms = <175>;
+
+            bindings = <&mo>, <&lower_dance>;
         };
     };
 
     /*
-     * Holding LOWER + RAISE also activates ADJUST.
+     * LOWER + RAISE still activates ADJUST normally.
      */
     conditional_layers {
         compatible = "zmk,conditional-layers";
@@ -63,7 +90,7 @@
 &kp GRAVE   &kp Q   &kp W      &kp E         &kp R         &kp T      &kp Y                                   &kp U         &kp I           &kp O            &kp P     &kp EQUAL
 &kp TAB     &kp A   &kp S      &kp D         &kp F         &kp G      &kp H                                   &kp J         &kp K           &kp L            &kp SEMI  &kp SQT
 &kp LSHFT   &kp Z   &kp X      &kp C         &kp V         &kp B      &kp C_MUTE  &kp C_PLAY  &kp N           &kp M         &kp COMMA       &kp DOT          &kp FSLH  &kp ENTER
-                    &kp LCTRL  &kp LEFT_GUI  &kp LEFT_ALT  &lower_td  &kp SPACE   &mo RAISE   &kp LEFT_ARROW  &kp UP_ARROW  &kp DOWN_ARROW  &kp RIGHT_ARROW
+                    &kp LCTRL  &kp LEFT_GUI  &kp LEFT_ALT  &lower_key LOWER 0  &kp SPACE   &mo RAISE   &kp LEFT_ARROW  &kp UP_ARROW  &kp DOWN_ARROW  &kp RIGHT_ARROW
             >;
 
             sensor-bindings =
@@ -121,18 +148,32 @@
             display-name = "adjust";
 
             // ----------------------------------------------------------------------------------------------------------------------------
-            // Right-hand DEFAULT keys copied to the LEFT side in the same order:
+            // Normal right-hand keys copied directly onto the left side:
             //
             // |   6   |  7  |  8  |  9  |  0  | BKSPC |
             // |   Y   |  U  |  I  |  O  |  P  |   =   |
             // |   H   |  J  |  K  |  L  |  ;  |   '   |
             // |   N   |  M  |  ,  |  .  |  /  | ENTER |
             //
-            // Example:
-            // double-tap LOWER, then Q -> Y
-            // double-tap LOWER, then W -> U
-            // double-tap LOWER, then A -> H
-            // double-tap LOWER, then Z -> N
+            // Double-tap LOWER, then:
+            //
+            // Q -> Y
+            // W -> U
+            // E -> I
+            // R -> O
+            // T -> P
+            //
+            // A -> H
+            // S -> J
+            // D -> K
+            // F -> L
+            // G -> ;
+            //
+            // Z -> N
+            // X -> M
+            // C -> ,
+            // V -> .
+            // B -> /
 
             bindings = <
 &kp N6     &kp N7  &kp N8     &kp N9   &kp N0    &kp BACKSPACE                           &none  &none  &none  &none  &none  &none
