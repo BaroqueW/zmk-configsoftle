@@ -4,6 +4,8 @@ manifest:
       url-base: https://github.com/zmkfirmware
     # Additional modules containing boards/shields/custom code can be listed here as well
     # See https://docs.zephyrproject.org/3.2.0/develop/west/manifest.html#projects
+    - name: yanshay
+      url-base: https://github.com/yanshay
         # support nice_oled and nice_epaper
     - name: baroquew
       url-base: https://github.com/BaroqueW
@@ -12,14 +14,10 @@ manifest:
   projects:
     - name: zmk
       remote: zmkfirmware
-      revision: v0.3
+      revision: main
       import: app/west.yml
-    # support nice_oled and nice_epaper
-    - name: zmk-nice-oled
-      remote: baroquew
-      revision: master
-    - name: zmk-antecedent-morph
-      remote: ssbb
-      revision: v1
+    - name: zmk-nodefree-config
+      remote: yanshay
+      revision: main
   self:
     path: config
