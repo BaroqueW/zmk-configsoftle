@@ -15,6 +15,7 @@
 };
 
 / {
+
     chosen {
         zephyr,code-partition = &code_partition;
         zephyr,sram = &sram0;
@@ -68,6 +69,10 @@
 
 zephyr_udc0: &usbd {
     status = "okay";
+};
+
+&reg1 {
+    regulator-initial-mode = <NRF5X_REG_MODE_DCDC>;
 };
 
 &flash0 {
