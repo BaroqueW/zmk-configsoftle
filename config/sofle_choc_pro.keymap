@@ -17,56 +17,48 @@
 #define LOWER 1
 #define RAISE 2
 #define ADJUST 3
+#define LOWER_WAIT 4
 
 / {
     behaviors {
-    /*
-     * A zero-output behavior used for the tap side of lower_hold.
-     */
-    lower_noop: lower_noop {
-        compatible = "zmk,behavior-macro";
-        #binding-cells = <0>;
-        bindings = <&none>;
+        /*
+         * Temporary sticky layer used to detect the second LOWER tap.
+         *
+         * It behaves like a normal sticky layer (&sl), but expires
+         * after 300ms instead of the normal 1000ms.
+         */
+        lower_wait: lower_wait {
+            compatible = "zmk,behavior-sticky-key";
+            #binding-cells = <1>;
+
+            bindings = <&mo>;
+
+            release-after-ms = <300>;
+            quick-release;
+        };
+
+        /*
+         * LOWER thumb behavior:
+         *
+         * Hold -> momentary LOWER
+         * Tap  -> activate LOWER_WAIT for 300ms
+         *
+         * On LOWER_WAIT, pressing this same physical key again
+         * activates sticky ADJUST.
+         */
+        lower_key: lower_key {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+
+            flavor = "hold-preferred";
+            tapping-term-ms = <200>;
+
+            bindings = <&mo>, <&lower_wait>;
+        };
     };
 
     /*
-     * First tap-dance action:
-     *
-     * Hold -> momentary LOWER
-     * Tap  -> nothing
-     */
-    lower_hold: lower_hold {
-        compatible = "zmk,behavior-hold-tap";
-        #binding-cells = <2>;
-
-        flavor = "hold-preferred";
-        tapping-term-ms = <200>;
-
-        bindings = <&mo>, <&lower_noop>;
-    };
-
-    /*
-     * Physical LOWER key:
-     *
-     * First press:
-     *   Nested lower_hold decides between hold and tap.
-     *
-     * Second tap:
-     *   Activate sticky ADJUST.
-     */
-    lower_td: lower_td {
-        compatible = "zmk,behavior-tap-dance";
-        #binding-cells = <0>;
-        tapping-term-ms = <250>;
-
-        bindings =
-            <&lower_hold LOWER 0>,
-            <&sl ADJUST>;
-    };
-};
-
-    /*
-     * LOWER + RAISE still activates ADJUST normally.
+     * Holding LOWER + RAISE still activates ADJUST.
      */
     conditional_layers {
         compatible = "zmk,conditional-layers";
@@ -95,7 +87,7 @@
 &kp GRAVE   &kp Q   &kp W      &kp E         &kp R         &kp T      &kp Y                                   &kp U         &kp I           &kp O            &kp P     &kp EQUAL
 &kp TAB     &kp A   &kp S      &kp D         &kp F         &kp G      &kp H                                   &kp J         &kp K           &kp L            &kp SEMI  &kp SQT
 &kp LSHFT   &kp Z   &kp X      &kp C         &kp V         &kp B      &kp C_MUTE  &kp C_PLAY  &kp N           &kp M         &kp COMMA       &kp DOT          &kp FSLH  &kp ENTER
-                    &kp LCTRL  &kp LEFT_GUI  &kp LEFT_ALT  &lower_td  &kp SPACE   &mo RAISE   &kp LEFT_ARROW  &kp UP_ARROW  &kp DOWN_ARROW  &kp RIGHT_ARROW
+                    &kp LCTRL  &kp LEFT_GUI  &kp LEFT_ALT  &lower_key LOWER LOWER_WAIT  &kp SPACE   &mo RAISE   &kp LEFT_ARROW  &kp UP_ARROW  &kp DOWN_ARROW  &kp RIGHT_ARROW
             >;
 
             sensor-bindings =
@@ -153,32 +145,12 @@
             display-name = "adjust";
 
             // ----------------------------------------------------------------------------------------------------------------------------
-            // Normal right-hand keys copied directly onto the left side:
+            // Normal right-hand DEFAULT keys copied onto the LEFT side:
             //
             // |   6   |  7  |  8  |  9  |  0  | BKSPC |
             // |   Y   |  U  |  I  |  O  |  P  |   =   |
             // |   H   |  J  |  K  |  L  |  ;  |   '   |
             // |   N   |  M  |  ,  |  .  |  /  | ENTER |
-            //
-            // Double-tap LOWER, then:
-            //
-            // Q -> Y
-            // W -> U
-            // E -> I
-            // R -> O
-            // T -> P
-            //
-            // A -> H
-            // S -> J
-            // D -> K
-            // F -> L
-            // G -> ;
-            //
-            // Z -> N
-            // X -> M
-            // C -> ,
-            // V -> .
-            // B -> /
 
             bindings = <
 &kp N6     &kp N7  &kp N8     &kp N9   &kp N0    &kp BACKSPACE                           &none  &none  &none  &none  &none  &none
@@ -186,6 +158,40 @@
 &kp H      &kp J   &kp K      &kp L    &kp SEMI  &kp SQT        &none                          &none  &none  &none  &none  &none
 &kp N      &kp M   &kp COMMA  &kp DOT  &kp FSLH  &kp ENTER      &none  &none  &none  &none  &none  &none  &none  &none
                     &trans    &trans    &trans     &trans         &trans  &none  &none  &none  &none  &none
+            >;
+
+            sensor-bindings =
+                <&inc_dec_kp C_VOL_DN C_VOL_UP>,
+                <&inc_dec_kp C_PREV C_NEXT>;
+        };
+
+        /*
+         * Internal state layer.
+         *
+         * All keys are transparent except the physical LOWER key.
+         *
+         * Therefore:
+         *
+         *   LOWER tap -> LOWER_WAIT
+         *
+         *   LOWER_WAIT + Q
+         *       -> Q falls through to DEFAULT
+         *       -> LOWER_WAIT disappears
+         *
+         *   LOWER_WAIT + LOWER
+         *       -> &sl ADJUST
+         *       -> LOWER_WAIT disappears
+         *       -> ADJUST remains armed for next key
+         */
+        lower_wait_layer {
+            display-name = "lower-wait";
+
+            bindings = <
+&trans  &trans  &trans  &trans  &trans  &trans                         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans                         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans                         &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans         &trans  &trans  &trans  &trans  &trans
+                &trans  &trans  &trans  &sl ADJUST  &trans  &trans  &trans  &trans  &trans  &trans
             >;
 
             sensor-bindings =
