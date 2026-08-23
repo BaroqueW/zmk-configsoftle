@@ -2,3 +2,5 @@
 
 .zmk/
 artifacts/
+*.png
+*.gif

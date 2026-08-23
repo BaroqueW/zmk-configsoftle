@@ -16,7 +16,9 @@ CONFIG_LV_FONT_DEFAULT_MONTSERRAT_26=y
 
 ## Rotate screen
 
-You can rotate the custom widget by 180 degrees. To do so, add the following item to your `.conf` file:
+The default orientation preserves the custom Sofle layout, including its independently rotated
+top/WPM panel. For a display mounted in the opposite orientation, add the following item to your
+`.conf` file to mirror the panel positions and rotate the remaining widgets and peripheral art:
 
 ```
 CONFIG_NICE_VIEW_DISP_ROTATE_180=y
