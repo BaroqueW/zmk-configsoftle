@@ -10,9 +10,6 @@ endif # BOARD_SOFLE_CHOC_PRO_LEFT
 
 if BOARD_SOFLE_CHOC_PRO_LEFT || BOARD_SOFLE_CHOC_PRO_RIGHT 
 
-config BOARD
-    default "sofle_choc_pro"
-
 config ZMK_SPLIT
     default y
 
