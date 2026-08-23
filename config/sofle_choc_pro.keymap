@@ -17,6 +17,7 @@
 #define LOWER 1
 #define RAISE 2
 #define ADJUST 3
+#define ADJUST_ONESHOT 4
 
 / {
     behaviors {
@@ -33,7 +34,9 @@
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
 
-            flavor = "tap-preferred";
+            // An overlapping key selects LOWER; releasing this key alone selects
+            // the one-shot layer, even if it was held past the tapping term.
+            flavor = "hold-preferred";
             tapping-term-ms = <200>;
             retro-tap;
 
@@ -68,7 +71,7 @@
 &kp GRAVE   &kp Q   &kp W      &kp E         &kp R         &kp T      &kp Y                                   &kp U         &kp I           &kp O            &kp P     &kp EQUAL
 &kp TAB     &kp A   &kp S      &kp D         &kp F         &kp G      &kp H                                   &kp J         &kp K           &kp L            &kp SEMI  &kp SQT
 &kp LSHFT   &kp Z   &kp X      &kp C         &kp V         &kp B      &kp C_MUTE  &kp C_PLAY  &kp N           &kp M         &kp COMMA       &kp DOT          &kp FSLH  &kp ENTER
-                    &kp LCTRL  &kp LEFT_GUI  &kp LEFT_ALT  &lower_adjust LOWER ADJUST  &kp SPACE   &mo RAISE   &kp LEFT_ARROW  &kp UP_ARROW  &kp DOWN_ARROW  &kp RIGHT_ARROW
+                    &kp LCTRL  &kp LEFT_GUI  &kp LEFT_ALT  &lower_adjust LOWER ADJUST_ONESHOT  &kp SPACE   &mo RAISE   &kp LEFT_ARROW  &kp UP_ARROW  &kp DOWN_ARROW  &kp RIGHT_ARROW
             >;
 
             sensor-bindings =
@@ -151,6 +154,24 @@
             // V -> .
             // B -> /
 
+            bindings = <
+&kp N6     &kp N7  &kp N8     &kp N9   &kp N0    &kp BACKSPACE                           &none  &none  &none  &none  &none  &none
+&kp Y      &kp U   &kp I      &kp O    &kp P     &kp EQUAL      &none                          &none  &none  &none  &none  &none
+&kp H      &kp J   &kp K      &kp L    &kp SEMI  &kp SQT        &none                          &none  &none  &none  &none  &none
+&kp N      &kp M   &kp COMMA  &kp DOT  &kp FSLH  &kp ENTER      &none  &none  &none  &none  &none  &none  &none  &none
+                    &trans    &trans    &trans     &trans         &trans  &none  &none  &none  &none  &none
+            >;
+
+            sensor-bindings =
+                <&inc_dec_kp C_VOL_DN C_VOL_UP>,
+                <&inc_dec_kp C_PREV C_NEXT>;
+        };
+
+        adjust_oneshot_layer {
+            display-name = "adjust one-shot";
+
+            // This layer intentionally mirrors ADJUST. It must be separate because
+            // a conditional then-layer is deactivated whenever its condition is false.
             bindings = <
 &kp N6     &kp N7  &kp N8     &kp N9   &kp N0    &kp BACKSPACE                           &none  &none  &none  &none  &none  &none
 &kp Y      &kp U   &kp I      &kp O    &kp P     &kp EQUAL      &none                          &none  &none  &none  &none  &none
