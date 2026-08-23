@@ -84,6 +84,8 @@ static void draw_top(lv_obj_t *widget, const struct status_state *state) {
             strcat(output_text, LV_SYMBOL_SETTINGS);
         }
         break;
+    case ZMK_TRANSPORT_NONE:
+        break;
     }
 
     canvas_draw_text(canvas, 0, 0, CANVAS_SIZE, &label_dsc, output_text);

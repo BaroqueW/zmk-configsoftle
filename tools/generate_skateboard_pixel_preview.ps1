@@ -1,6 +1,6 @@
 param(
-    [string]$Preview = "boards/shields/nice_view_disp/widgets/skateboard_animation_preview_v4.png",
-    [string]$Animation = "boards/shields/nice_view_disp/widgets/skateboard_animation_v4.gif",
+    [string]$Preview = "boards/shields/nice_view_disp/widgets/skateboard_animation_preview_v8.png",
+    [string]$Animation = "boards/shields/nice_view_disp/widgets/skateboard_animation_v8.gif",
     [ValidateRange(5, 100)]
     [int]$FrameDelayCentiseconds = 25
 )
@@ -83,26 +83,30 @@ function Draw-WheelCylinder([System.Drawing.Graphics]$graphics, [float]$truckX,
     # axle turns broadside to the viewer, revealing a five-pixel sidewall.
     $innerY = Project-Y (14 * $side) 4 $cosine $sine
     $outerY = Project-Y (19 * $side) 4 $cosine $sine
-    $faceHeight = [float](4.0 + (6.0 * [Math]::Abs($sine)))
+    $wheelDiameter = 12.0
+    $wheelRadius = $wheelDiameter / 2.0
+    $faceHeight = [float](5.0 + (7.0 * [Math]::Abs($sine)))
     $halfFaceHeight = $faceHeight / 2.0
     $bodyTop = [float]([Math]::Min($innerY, $outerY) - $halfFaceHeight)
     $bodyBottom = [float]([Math]::Max($innerY, $outerY) + $halfFaceHeight)
 
     $graphics.FillRectangle([System.Drawing.Brushes]::White,
-                            [float]($truckX - 5), $bodyTop, 10,
+                            [float]($truckX - $wheelRadius), $bodyTop, $wheelDiameter,
                             [float]($bodyBottom - $bodyTop))
-    $graphics.DrawLine($wheelPen, [float]($truckX - 5), $innerY,
-                       [float]($truckX - 5), $outerY)
-    $graphics.DrawLine($wheelPen, [float]($truckX + 5), $innerY,
-                       [float]($truckX + 5), $outerY)
+    $graphics.DrawLine($wheelPen, [float]($truckX - $wheelRadius), $innerY,
+                       [float]($truckX - $wheelRadius), $outerY)
+    $graphics.DrawLine($wheelPen, [float]($truckX + $wheelRadius), $innerY,
+                       [float]($truckX + $wheelRadius), $outerY)
 
     # Both rims stay visible in three-quarter views; the outer face carries the hub.
     $graphics.DrawEllipse($detailPen,
-                          [float]($truckX - 5), [float]($innerY - $halfFaceHeight),
-                          10, $faceHeight)
+                          [float]($truckX - $wheelRadius),
+                          [float]($innerY - $halfFaceHeight),
+                          $wheelDiameter, $faceHeight)
     $graphics.DrawEllipse($wheelPen,
-                          [float]($truckX - 5), [float]($outerY - $halfFaceHeight),
-                          10, $faceHeight)
+                          [float]($truckX - $wheelRadius),
+                          [float]($outerY - $halfFaceHeight),
+                          $wheelDiameter, $faceHeight)
     if ($faceHeight -ge 5) {
         $hubHeight = [float][Math]::Max(2, $faceHeight - 5)
         $graphics.DrawEllipse($detailPen,
@@ -110,6 +114,81 @@ function Draw-WheelCylinder([System.Drawing.Graphics]$graphics, [float]$truckX,
                               [float]($outerY - ($hubHeight / 2)),
                               4, $hubHeight)
     }
+}
+
+function Draw-TruckAssembly([System.Drawing.Graphics]$graphics, [float]$truckX,
+                            [double]$cosine, [double]$sine,
+                            [System.Drawing.Pen]$truckPen,
+                            [System.Drawing.Pen]$detailPen) {
+    $direction = if ($truckX -lt 70) { 1 } else { -1 }
+    $mountX = $truckX + ($direction * 5)
+
+    # A solid axle beam spans the inner wheel faces. Its depth keeps it visible
+    # when that span collapses in the two full side-profile frames.
+    $axleEnds = @(
+        (Project-Y -14 4 $cosine $sine),
+        (Project-Y 14 4 $cosine $sine)
+    )
+    $axleTop = [float]([Math]::Min($axleEnds[0], $axleEnds[1]) - 1.5)
+    $axleBottom = [float]([Math]::Max($axleEnds[0], $axleEnds[1]) + 1.5)
+    $graphics.FillRectangle([System.Drawing.Brushes]::Black,
+                            [float]($truckX - 2), $axleTop, 4,
+                            [float]($axleBottom - $axleTop))
+
+    # The broad tapered hanger connects the axle to an inboard baseplate. The
+    # lower pivot depth creates a triangular truck silhouette in side view.
+    $outerYs = @(
+        (Project-Y -7 4 $cosine $sine),
+        (Project-Y 7 4 $cosine $sine)
+    )
+    $innerYs = @(
+        (Project-Y -3 1.5 $cosine $sine),
+        (Project-Y 3 1.5 $cosine $sine)
+    )
+    $topOuter = [Math]::Min($outerYs[0], $outerYs[1])
+    $bottomOuter = [Math]::Max($outerYs[0], $outerYs[1])
+    $topInner = [Math]::Min($innerYs[0], $innerYs[1])
+    $bottomInner = [Math]::Max($innerYs[0], $innerYs[1])
+    $hanger = [System.Drawing.PointF[]]@(
+        [System.Drawing.PointF]::new([float]($mountX - 2.5), [float]$topInner),
+        [System.Drawing.PointF]::new([float]($truckX - 4), [float]$topOuter),
+        [System.Drawing.PointF]::new([float]($truckX + 4), [float]$topOuter),
+        [System.Drawing.PointF]::new([float]($mountX + 2.5), [float]$topInner),
+        [System.Drawing.PointF]::new([float]($mountX + 2.5), [float]$bottomInner),
+        [System.Drawing.PointF]::new([float]($truckX + 4), [float]$bottomOuter),
+        [System.Drawing.PointF]::new([float]($truckX - 4), [float]$bottomOuter),
+        [System.Drawing.PointF]::new([float]($mountX - 2.5), [float]$bottomInner)
+    )
+    $graphics.FillPolygon([System.Drawing.Brushes]::White, $hanger)
+    $graphics.DrawPolygon($truckPen, $hanger)
+
+    # The drop-through mounting plate remains broad enough to read as a plate,
+    # rather than as the small floating square used in the earlier previews.
+    $mountYs = @(
+        (Project-Y -3.5 4 $cosine $sine),
+        (Project-Y 3.5 4 $cosine $sine)
+    )
+    $mountTop = [float]([Math]::Min($mountYs[0], $mountYs[1]) - 0.8)
+    $mountBottom = [float]([Math]::Max($mountYs[0], $mountYs[1]) + 0.8)
+    $graphics.FillRectangle([System.Drawing.Brushes]::White,
+                            [float]($mountX - 3.5), $mountTop, 7,
+                            [float]($mountBottom - $mountTop))
+    $graphics.DrawRectangle($truckPen,
+                            [float]($mountX - 3.5), $mountTop, 7,
+                            [float]($mountBottom - $mountTop))
+
+    foreach ($side in @(-1, 1)) {
+        $graphics.DrawLine($truckPen,
+                           $truckX, (Project-Y (11 * $side) 4 $cosine $sine),
+                           $mountX, (Project-Y (3 * $side) 1.5 $cosine $sine))
+    }
+
+    $pivotX = [float](($truckX + $mountX) / 2.0)
+    $pivotY = Project-Y 0 1.5 $cosine $sine
+    $graphics.FillEllipse([System.Drawing.Brushes]::Black,
+                          [float]($pivotX - 1.5), [float]($pivotY - 1.5), 3, 3)
+    $graphics.DrawLine($detailPen, $mountX, (Project-Y 0 4 $cosine $sine),
+                       $pivotX, $pivotY)
 }
 
 function New-SkateboardFrame([int]$index) {
@@ -120,27 +199,33 @@ function New-SkateboardFrame([int]$index) {
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
     $outlinePen = New-Pen 1.8
     $detailPen = New-Pen 1.0
-    $truckPen = New-Pen 1.3
+    $truckPen = New-Pen 1.6
     $wheelPen = New-Pen 1.6
     try {
         $graphics.Clear([System.Drawing.Color]::White)
         $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::None
         $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::Half
 
-        $profileX = @(14, 25, 31, 109, 115, 126)
-        $profileHalfWidth = @(7, 7, 12, 12, 7, 7)
+        # The Superdupersonic is a double-drop deck: the truck platforms pass
+        # through at axle height, short ramps lower the standing platform, and
+        # the outer nose/tail wedges angle back down toward the ground.
+        $profileX = @(14, 25, 31, 37, 103, 109, 115, 126)
+        $profileHalfWidth = @(7, 7, 10, 12, 12, 10, 7, 7)
+        $profileZ = @(1, 4, 3, 0, 0, 3, 4, 1)
         $deckPoints = [System.Collections.Generic.List[System.Drawing.PointF]]::new()
         for ($i = 0; $i -lt $profileX.Count; $i++) {
             $halfHeight = [Math]::Abs($profileHalfWidth[$i] * $cosine) +
-                          [Math]::Abs(1.8 * $sine)
+                          [Math]::Abs(1.3 * $sine)
+            $deckCenterY = Project-Y 0 $profileZ[$i] $cosine $sine
             $deckPoints.Add([System.Drawing.PointF]::new($profileX[$i],
-                                                         [float]($centerY - $halfHeight)))
+                                                         [float]($deckCenterY - $halfHeight)))
         }
         for ($i = $profileX.Count - 1; $i -ge 0; $i--) {
             $halfHeight = [Math]::Abs($profileHalfWidth[$i] * $cosine) +
-                          [Math]::Abs(1.8 * $sine)
+                          [Math]::Abs(1.3 * $sine)
+            $deckCenterY = Project-Y 0 $profileZ[$i] $cosine $sine
             $deckPoints.Add([System.Drawing.PointF]::new($profileX[$i],
-                                                         [float]($centerY + $halfHeight)))
+                                                         [float]($deckCenterY + $halfHeight)))
         }
         $graphics.FillPolygon([System.Drawing.Brushes]::White, $deckPoints.ToArray())
         $graphics.DrawPolygon($outlinePen, $deckPoints.ToArray())
@@ -152,21 +237,16 @@ function New-SkateboardFrame([int]$index) {
                 Draw-GripPattern $graphics $cosine
             }
         } else {
-            $graphics.DrawLine($detailPen, 31, $centerY, 109, $centerY)
+            $sideProfile = [System.Collections.Generic.List[System.Drawing.PointF]]::new()
+            for ($i = 0; $i -lt $profileX.Count; $i++) {
+                $sideProfile.Add([System.Drawing.PointF]::new(
+                    $profileX[$i], (Project-Y 0 $profileZ[$i] $cosine $sine)))
+            }
+            $graphics.DrawLines($detailPen, $sideProfile.ToArray())
         }
 
         foreach ($truckX in @(24, 116)) {
-            $innerWheelYs = @(
-                (Project-Y -14 4 $cosine $sine),
-                (Project-Y 14 4 $cosine $sine)
-            )
-            $graphics.DrawLine($truckPen, $truckX, $innerWheelYs[0],
-                               $truckX, $innerWheelYs[1])
-            $truckCenter = ($innerWheelYs[0] + $innerWheelYs[1]) / 2.0
-            $graphics.FillRectangle([System.Drawing.Brushes]::White,
-                                    [float]($truckX - 3), [float]($truckCenter - 2), 6, 4)
-            $graphics.DrawRectangle($truckPen,
-                                    [float]($truckX - 3), [float]($truckCenter - 2), 6, 4)
+            Draw-TruckAssembly $graphics $truckX $cosine $sine $truckPen $detailPen
             foreach ($side in @(-1, 1)) {
                 Draw-WheelCylinder $graphics $truckX $side $cosine $sine $wheelPen $detailPen
             }

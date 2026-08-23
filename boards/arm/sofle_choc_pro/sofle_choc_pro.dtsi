@@ -67,6 +67,15 @@
     status = "okay";
 };
 
+&gpiote {
+    status = "okay";
+};
+
+&uicr {
+    nfct-pins-as-gpios;
+    gpio-as-nreset;
+};
+
 zephyr_udc0: &usbd {
     status = "okay";
 };

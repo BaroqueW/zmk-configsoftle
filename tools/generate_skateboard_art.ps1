@@ -18,6 +18,14 @@ $bayer = @(0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5)
 $sourceBitmap = [System.Drawing.Bitmap]::FromFile((Resolve-Path $Source))
 $frames = @()
 
+function Get-OutputPath([string]$path) {
+    if ([System.IO.Path]::IsPathRooted($path)) {
+        return [System.IO.Path]::GetFullPath($path)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path (Get-Location) $path))
+}
+
 function Get-PixelBytes([System.Drawing.Bitmap]$bitmap, [bool]$rotate180) {
     $bytes = [System.Collections.Generic.List[byte]]::new()
     for ($y = 0; $y -lt $displayHeight; $y++) {
@@ -47,10 +55,9 @@ function Get-PixelBytes([System.Drawing.Bitmap]$bitmap, [bool]$rotate180) {
 }
 
 try {
-    $cellWidth = [int]($sourceBitmap.Width / $frameCount)
     for ($index = 0; $index -lt $frameCount; $index++) {
-        $left = $index * $cellWidth
-        $right = [Math]::Min($sourceBitmap.Width, $left + $cellWidth)
+        $left = [int][Math]::Floor($index * $sourceBitmap.Width / $frameCount)
+        $right = [int][Math]::Floor(($index + 1) * $sourceBitmap.Width / $frameCount)
         $minX = $right
         $minY = $sourceBitmap.Height
         $maxX = $left
@@ -110,14 +117,14 @@ try {
             $originY = [int][Math]::Floor($index / 4) * $displayHeight
             for ($y = 0; $y -lt $displayHeight; $y++) {
                 for ($x = 0; $x -lt $displayWidth; $x++) {
-                    $byte = $previewBytes[($y * 18) + [int]($x / 8)]
+                    $byte = $previewBytes[($y * 18) + [int][Math]::Floor($x / 8)]
                     $isWhite = ($byte -band (1 -shl (7 - ($x % 8)))) -ne 0
                     $previewBitmap.SetPixel($originX + $x, $originY + $y,
                         $(if ($isWhite) { [System.Drawing.Color]::White } else { [System.Drawing.Color]::Black }))
                 }
             }
         }
-        $previewBitmap.Save((Join-Path (Get-Location) $Preview), [System.Drawing.Imaging.ImageFormat]::Png)
+        $previewBitmap.Save((Get-OutputPath $Preview), [System.Drawing.Imaging.ImageFormat]::Png)
     } finally {
         $previewBitmap.Dispose()
     }
@@ -171,7 +178,7 @@ try {
     $lines.Add("};")
     $lines.Add("")
     $lines.Add("const size_t skateboard_frame_count = sizeof(skateboard_frames) / sizeof(skateboard_frames[0]);")
-    [System.IO.File]::WriteAllLines((Join-Path (Get-Location) $Output), $lines)
+    [System.IO.File]::WriteAllLines((Get-OutputPath $Output), $lines)
 } finally {
     foreach ($frame in $frames) { $frame.Dispose() }
     $sourceBitmap.Dispose()
