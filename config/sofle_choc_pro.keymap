@@ -19,24 +19,6 @@
 #define ADJUST 3
 
 / {
-    macros {
-        /*
-         * Used by the double-tap action.
-         *
-         * Tap-dance resolves the second tap on key-down. We therefore
-         * wait until that second physical LOWER press has been released
-         * before activating sticky ADJUST.
-         */
-        adjust_oneshot: adjust_oneshot {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-
-            bindings =
-                <&macro_pause_for_release>,
-                <&macro_tap &sl ADJUST>;
-        };
-    };
-
     behaviors {
         lower_adjust: lower_adjust {
             compatible = "zmk,behavior-hold-tap";
